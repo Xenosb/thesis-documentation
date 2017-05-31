@@ -1,12 +1,14 @@
-\documentclass[times, utf8]{scrreprt}
+\documentclass[times, utf8, a4paper]{scrreprt}
 
 \begin{document}
 
-\include{fer/cover}
-\include{fer/cover}
-\include{fer/assignment}
-\include{fer/statement}
-\include{fer/gratitude}
+\pagenumbering{gobble}
+
+\include{title}
+%\include{fer/cover}
+%\include{fer/assignment}
+%\include{fer/statement}
+%\include{fer/gratitude}
 
 \tableofcontents
 
@@ -14,14 +16,14 @@
 
 %\include{chapter/introduction}
 %\include{chapter/conclusion}
-
+\textsc{}
 \listoffigures
 \listoftables
 
 \bibliography{citeulike}
 
-\include{fer/abstract_hr}
-\include{fer/abstract_en}
-\include{fer/apendix}
+%\include{fer/abstract_hr}
+%\include{fer/abstract_en}
+%\include{fer/apendix}
 
 \end{document}
