@@ -1,0 +1,44 @@
+\begin{titlepage}
+
+\let\footnotesize\small
+		\let\footnoterule\relax
+	
+		\begin{center}
+			{\large\sffamily UNIVERSITY OF ZAGREB}
+			
+			{\large\bfseries\sffamily FACULTY OF ELECTRICAL ENGINEERING AND COMPUTING}
+		\end{center}
+		\vfill
+		\begin{center}%
+	    	\if@radzavrsni%
+			  {\large\sffamily ZAVR\v{S}NI RAD br.~\@thesisnumber \par}%
+			\else \if@raddiplomski%
+			  {\large\sffamily DIPLOMSKI RAD br.~\@thesisnumber \par}%
+			\else {\large\sffamily\bfseries SEMINAR \par}%
+			\fi\fi
+			\if@radseminar \vskip 3em%
+			\else \vskip 1em%
+			\fi
+			{\huge \bfseries\sffamily \thesistitle \par}%
+			\vskip 1em%
+			{\large\sffamily\lineskip .75em%
+			\begin{tabular}[t]{c}%
+	        	\if@radseminar%
+	        	  {\itshape \thesisauthor} \\
+	        	  Voditelj: {\itshape \@voditelj}
+	        	\else
+				    \thesisauthor
+				\fi
+			\end{tabular}\par}%
+		\end{center}\par
+		\vfill
+		\begin{center}
+			{\sffamily\large Konstanz, 
+			\ifcase\month\or
+				sije\v{c}anj\or velja\v{c}a\or o\v{z}ujak\or travanj\or svibanj\or
+	   	 		lipanj\or srpanj\or kolovoz\or rujan\or listopad\or studeni\or
+	    			prosinac\fi \space \number\year.%
+	    	}
+		\end{center}
+
+\end{titlepage}

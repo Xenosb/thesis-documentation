@@ -1,26 +1,32 @@
 \documentclass[times, utf8, a4paper]{scrreprt}
+\usepackage[a4paper, left=35mm, right=30mm, top=30mm, bottom=30mm]{geometry}
+
+\input{preamble/packages}
+\input{preamble/variables}
 
 \begin{document}
 
 \pagenumbering{gobble}
 
-\include{title}
-%\include{fer/cover}
-%\include{fer/assignment}
-%\include{fer/statement}
-%\include{fer/gratitude}
+\include{fer/title}
+\include{fer/title}
+\include{fer/assignment}
+\include{fer/statement}
+\include{fer/gratitude}
 
 \tableofcontents
 
 \pagenumbering{arabic}
 
-%\include{chapter/introduction}
-%\include{chapter/conclusion}
-\textsc{}
+\include{chapter/introduction}
+\include{chapter/conclusion}
+
 \listoffigures
 \listoftables
 
-\bibliography{citeulike}
+\nocite{*}
+\bibliographystyle{apalike}
+\bibliography{literature}
 
 %\include{fer/abstract_hr}
 %\include{fer/abstract_en}
