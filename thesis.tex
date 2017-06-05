@@ -1,8 +1,9 @@
-\documentclass[times, utf8, a4paper]{scrreprt}
+\documentclass[times, utf8, a4paper, toc=listof, bibliography=totoc]{scrreprt}
 \usepackage[a4paper, left=35mm, right=30mm, top=30mm, bottom=30mm]{geometry}
 
 \input{preamble/packages}
 \input{preamble/variables}
+\input{preamble/settings}
 
 \begin{document}
 
@@ -11,26 +12,34 @@
 \include{fer/cover}
 \include{fer/title}
 
-\pagenumbering{roman}
+\pagenumbering{Roman}
 
 \include{fer/assignment}
 \include{fer/statement}
 
 \tableofcontents
 
+\input{preamble/acronyms}
+
+\newcounter{prepend}
+\setcounter{prepend}{\value{page}}
+
 \pagenumbering{arabic}
 
 \include{chapter/introduction}
 \include{chapter/conclusion}
 
+\pagenumbering{Roman}
+\setcounter{page}{\value{prepend}}
+
 \listoffigures
+\listoftables
 
 \nocite{*}
 \bibliographystyle{apalike}
 \bibliography{literature}
 
-%\include{fer/abstract_hr}
-%\include{fer/abstract_en}
+\include{fer/abstract}
 %\include{fer/apendix}
 
 \end{document}
