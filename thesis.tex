@@ -15,11 +15,9 @@
 \pagenumbering{Roman}
 
 \include{fer/assignment}
-\include{fer/statement}
+\include{fer/statements}
 
 \tableofcontents
-
-\input{preamble/acronyms}
 
 \newcounter{prepend}
 \setcounter{prepend}{\value{page}}
@@ -27,16 +25,22 @@
 \pagenumbering{arabic}
 
 \include{chapters/introduction}
+\include{chapters/hardware}
+\include{chapters/embedded}
+\include{chapters/software}
+\include{chapters/usage}
+\include{chapters/results}
 \include{chapters/conclusion}
 
 \pagenumbering{Roman}
 \setcounter{page}{\value{prepend}}
 
+\input{preamble/acronyms}
 \listoffigures
 \listoftables
 
 \nocite{*}
-\bibliographystyle{apalike}
+\bibliographystyle{IEEEtran}
 \bibliography{literature}
 
 \include{fer/abstract}
