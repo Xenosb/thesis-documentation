@@ -31,7 +31,7 @@ A most important part of the node circuit is a microcontroller. Main requirement
 
 \begin{figure}[h]
   \begin{center}
-    \includegraphics[width=0.5\linewidth]{2-pinout.png}
+    \includegraphics[width=0.4\linewidth]{2-pinout.png}
   \end{center}
   \caption{AT SAMD 64-pin TQFP package pin layout.}
   \label{fig:pinout}
@@ -47,6 +47,7 @@ A \ac{PCB} was designed in KiCad open-source tool for electronics design automat
 \begin{figure}[h]
   \begin{center}
     \includegraphics[width=0.45\linewidth]{2-pcb_kicad.png}
+    \hspace{1cm}
     \includegraphics[width=0.4\linewidth]{2-pcb_milled.jpg}
   \end{center}
   \caption{3D view and prototype of printed circuitboard developed for the project.}
@@ -64,9 +65,29 @@ To test the initial design, a board was milled at Department of Electronics at \
 \end{figure}
 
 
-\section{Software implementation}
+\section{Development environment}
 
-Software for the microcontroller was developed using \href{http://platformio.org}{Platformio}
+Because of the ARM architecture and Thumb2 instruction set, selected microcontroller supports multiple frameworks and development environments. One of most standardized and widely used frameworks is ARM mbed. It is compatible with almost all ARM microcontroller designs from vendors such as STMicroelectronics, NXP, Renesas, Nordic and Atmel\cite{mbed_devices}. Through abstraction it allows the same code to work on different devices. Depending on the selected device, application code is linked with platform specific libraries and a hex code output file is generated. This hex file can then be uploaded to the microcontroller using "drag and drop" or using \ac{SWD} interface\cite{SWD}. In case of this project, mbed framework was used through \href{http://platformio.org}{Platformio} open source ecosystem for \ac{IoT} development. This environment integrates in Microsoft's VSCode code editor and allows code compiling, upload and debugging along with other features such as intellisense code competition, unit testing and continuous integration. Although both mbed and Platformio support ATSAMD21J18 and Atmels Xplained Pro development board, they provide no support for ATSAMD21J16 variant of the microcontroller. This is why a new configuration for both had to be made.
+
+First, a new board configuration was added to the Platformio configuration folder found in \code{\char`\~/.platformio/boards}. Then a \ac{JSON} structured file was created based upon Atmel Xplained Pro board file but maximum ram size and maximum size were changed because of the smaller \ac{RAM} and flash size. Then a support for a new processor had to be added to the mbed \ac{SDK}. First a new microcontroller and variant were declared an then microcontroller features were described in \code{.platformio/packages/framework-mbed/targets/targets.json}. and can be seen in Listing \ref{lst:mbed_config}. Then \ac{GPIO} port mapping of this chip variant is declared in \code{port\_api.c}. Next required change includes modification of load script. \ac{ROM} is set as rx memory form address 0x00000000 until address 0x00010000 while \ac{RAM} is of rwx type starting from 0x20000000 and with size of 0x2000. Stack size is defined to be 0x500. After these changes were introduced, \ac{BSP} can be generated using tool tox. After that, a board is visible in Platformio and programs can be compiled for it.
+
+\begin{lstlisting}[language=json,firstnumber=1,caption={Description of mbed features implemented in ATSAMD21J16},label={lst:mbed_config}]
+"SAMD21J16A": {
+    "inherits": ["Target"],
+    "core": "Cortex-M0+",
+    "macros": ["__SAMD21J16A__", "I2C_MASTER_CALLBACK_MODE=true", "EXTINT_CALLBACK_MODE=true", "USART_CALLBACK_MODE=true", "TC_ASYNC=true"],
+    "extra_labels": ["Atmel", "SAM_CortexM0P", "SAMD21"],
+    "supported_toolchains": ["GCC_ARM", "ARM", "uARM"],
+    "device_has": ["ANALOGIN", "ANALOGOUT", "I2C", "I2CSLAVE", "I2C_ASYNCH", "INTERRUPTIN", "PORTIN", "PORTINOUT", "PORTOUT", "PWMOUT", "RTC", "SERIAL", "SERIAL_ASYNCH", "SERIAL_FC", "SLEEP", "SPI", "SPISLAVE", "SPI_ASYNCH"],
+    "release_versions": ["2"],
+    "device_name": "ATSAMD21J16A"
+}
+\end{lstlisting}
+
+After program has been compiled and linked for the specific microcontroller, the hex file needs to be uploaded to the microcontroller flash storage. Segger JLink programmer is used for this purpose. To automate the upload a custom script and configuration file were written and integrated into the Platformio. Debugger interface using OpenOCD was also setup so that microcontroller could be debugged from the same development environment. A preview found in Figure \textbf{TODO FIGURE} shows debugging user interface. 
+
+
+\section{Software implementation}
 
 \section{Installation and integration}
 
