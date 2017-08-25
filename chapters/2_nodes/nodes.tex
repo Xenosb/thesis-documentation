@@ -89,5 +89,22 @@ After program has been compiled and linked for the specific microcontroller, the
 
 \section{Software implementation}
 
+A software for the sensor node was written in C++ and compiled using gcc-arm-none-eabi. The main functionalities that were implemented are data readout from sensors and communication with the rest of the system. Each node can be described by the state which is defined by its \ac{I2C} address, sensor state, number of active sensors, with value of each sensor and by currently executing function. To abstract this, a library containing classes used in the project was created. Classes describe data and structures that are used and implement some of the functionality. The rest of the functionality is implemented in main file. It's worth noting that node does not save a longer sensor history but only upon requests serves most recent data.
+
+Class Smartbed is a singleton class which holds state information and provides an easy access to functions regarding the system functionality. Address is a private property of the class and it holds the 7-bit \ac{I2C} address. The address can safely be changed and accessed using mutator methods. Private property \code{active{\_}sensors} saves information which sensors are active in an uint32 data type. For example, if sensor 14 is active, bit 14 is set to 1 while for inactive sensors bits are set to 0. When a change occurs it's considered that sensor active while an inactive sensor reads the maximum voltage the hole time. Sensor values and pin positions are described in class Sensors which is referenced by Smartbed class. It is also a singleton type and provides methods which access one or all of the sensors and save data in the private property array. Since respiration and hearth pulse are low intensity signals, it is important to have the best possible resolution. Standard resolution of ATSAMD21 \ac{ADC} unit is 12-bit but through the use of subsampling it is possible to get 16-bit resolution which greatly helps in signal recognition.
+
+Two other classes are used for storing temporary communication information. \ac{I2C} packets consist of 7-bit address, read/write flag and data byte or bytes. When a packet is received, an object is created with separated data as a class property. \ac{I2C} also specifies that after every received byte an acknowledgement bit should be set by receiving party. On node side, this is handled by the \ac{I2C} unit of the microcontroller. An endpoint can as a bus master broadcast data using general call address 0, write data to a specific register of the slave or request a read from the device\cite{understanding_i2c}. To distinguish between access types, a class called \code{I2C{\_}RESULT} stores the access type as an enum. This property is set when object is created. Constructor method is overloaded and saves access type depending on the method parameters. If no parameters were supplied, package is invalid and type set to None. If only register address is supplied, master is requesting to read a data from the specified register. If register address and value are supplied master is writing to a register. All of the described classes are shown in Figure \ref{fig:node_classes}.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=\linewidth]{2-node_classes.png}
+  \end{center}
+  \caption{Helper classes used in firmware.}
+  \label{fig:node_classes}
+\end{figure}
+
+The main program starts with the initialization of peripherals - position sensing input pin is set to digital pull down input while and led and position sensing output pin are set to output pins. Then I2C communication is initialized to operate on $100KHz$ frequency and takes default address 0x10. Since reading subsampled data from \ac{ADC} takes considerable time, reding sensor value after request for it's value was requested would result in a timeout. This is why a periodical sensor update is executed roughly every 100ms. Frameworks inbuilt Ticker class takes care that function \code{update{\_}all{\_}sensors()} is executed. A 
+
+
 \section{Installation and integration}
 
