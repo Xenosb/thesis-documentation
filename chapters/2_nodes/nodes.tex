@@ -1,7 +1,7 @@
 \chapter{Sensor nodes}
 \label{chap:nodes}
 
-This chapter will describe functionalities of sensor node devices. After that it will describe how electronic parts were chosen. A separate section will include details regarding \ac{PCB} design while another section will follow the production from first prototype to the production. Finally, it will be shown how the board is installed and integrated into the system.
+This chapter will describe functionalities of sensor node devices. After that it will describe how electronic parts were chosen. A separate section will include details regarding \ac{PCB} design while another section will describe software developed for the sensor nodes.
 
 \section{Physical design and connections}
 
@@ -103,8 +103,49 @@ Two other classes are used for storing temporary communication information. \ac{
   \label{fig:node_classes}
 \end{figure}
 
-The main program starts with the initialization of peripherals - position sensing input pin is set to digital pull down input while and led and position sensing output pin are set to output pins. Then I2C communication is initialized to operate on $100KHz$ frequency and takes default address 0x10. Since reading subsampled data from \ac{ADC} takes considerable time, reding sensor value after request for it's value was requested would result in a timeout. This is why a periodical sensor update is executed roughly every 100ms. Frameworks inbuilt Ticker class takes care that function \code{update{\_}all{\_}sensors()} is executed. A 
+The main program starts with the initialization of peripherals - position sensing input pin is set to digital pull down input while and led and position sensing output pin are set to output pins. Then I2C communication is initialized to operate on $100KHz$ frequency and takes default address 0x10. Since reading subsampled data from \ac{ADC} takes considerable time, reding sensor value after request for it's value was requested would result in a timeout. This is why a periodical sensor update is executed roughly every 100ms. Frameworks inbuilt Ticker class takes care that function \code{update{\_}all{\_}sensors()} is executed timely. Unfortunately, mbed does not provide \ac{API} functionality to add custom function as software interrupt when I2C package is received. This is why a main program loop is executing \code{i2c{\_}slave{\_}worker} function. This function contains main communication logic. It listens to I2C bus and depending on the received data initializes \code{I2C{\_}RESULT} object which is then returned to main function. This object is then transferred to \code{process{\_}i2c{\_}call} which depending on the message type calls read, write and broadcast (general call) routines. Program logic is visualized in Figure \ref{fig:node_logic}.
 
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=\linewidth]{2-node_logic.png}
+  \end{center}
+  \caption{Sensor node program flow.}
+  \label{fig:node_logic}
+\end{figure}
 
-\section{Installation and integration}
+When node is accessed in write mode, two register addresses are writable. Writing a byte to 0xfa will change the address of the node while writing to 0xf0 will set the position sensing output pin high or low depending on the data byte received in the write request. Read requests for registers 0x00 to 0x0f address will return 16-bit value of specified sensor that is stored in \code{Sensors} class. Reading from 0xa0 will return values of all sensors. It's also possible to read from register 0xfa which returns I2C address, from 0xfb which returns number of active sensors, 0xfc returns the board revision which is defined in the header file and 0xfd returns firmware version also found in header file. A read request to all other addresses returns 0xab. When a general call is issued, if register 0xfa is addressed, node will check if position sensing pin is high and change its address to the one in \ac{I2C} package. This enables dynamic configuration of the sensor network an eliminates the need for a different firmware for each board. \\
 
+\begin{table}[h]
+  \begin{center}
+    \begin{tabular}[h]{ | >{\arraybackslash} m{2.5cm} | >{\arraybackslash} m{2cm} | > {\arraybackslash} m{8cm} |  }
+      \hline
+      & Register & Description \\ 
+      \hline
+      Read & 0x00 .. 0x0f & Data for specified sensor (2B) \\ 
+      & 0xa0 & All sensor data (32B) \\
+      & 0xfa & I2C address (1B) \\
+      & 0xfb & Number of active sensors (1B) \\
+      & 0xfc & Board revision (1B) \\
+      & 0xfd & Firmware version (1B) \\
+      & Default & Returns 0xab (1B) \\
+      \hline
+      Write & 0xfa & Changes node address (1B) \\
+      & 0xf0 & Sets position sense sensor value (1B) \\
+      \hline
+      General call & 0xf0 & If position sense is high, this sensor node takes the supplied address (1B) \\
+      \hline
+    \end{tabular}
+  \end{center}
+  \caption{I2C communication interface.}
+  \label{tab:i2c_api}
+\end{table}
+
+The first node is connected to the endpoint using the system bus cable. The cable attaches to the 6-pin \ac{IDC} connector labeled as \code{SBBUS{\_}1}. To add the second node to the system, a cable needs to connect connector \code{SBBUS{\_}2} on the first node and connector \code{SBBUS{\_}1} on the second node.Difference between this connectors is that pins for \code{SENSE{\_}IN} and \code{SENSE{\_}OUT} are swapped on the \ac{PCB}. This eliminates the need for custom cables or additional resistors. Figure \ref{fig:node_daisychain} demonstrates proper connection of a system containing of an endpoint and 2 nodes. Power can be supplied to the endpoint using microUSB cable.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=0.8\linewidth]{2-node_classes.png}
+  \end{center}
+  \caption{Sensor node program flow.}
+  \label{fig:node_daisychain}
+\end{figure}
