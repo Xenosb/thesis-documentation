@@ -132,7 +132,8 @@ When node is accessed in write mode, two register addresses are writable. Writin
       Write & 0xfa & Changes node address (1B) \\
       & 0xf0 & Sets position sense sensor value (1B) \\
       \hline
-      General call & 0xf0 & If position sense is high, this sensor node takes the supplied address (1B) \\
+      General call & 0x55 & All nodes reset address to 0x55 (0B) \\
+      & 0xfa & If position sense is high, this sensor node takes the supplied address (1B) \\
       \hline
     \end{tabular}
   \end{center}
@@ -144,7 +145,7 @@ The first node is connected to the endpoint using the system bus cable. The cabl
 
 \begin{figure}[h]
   \begin{center}
-    \includegraphics[width=0.7\linewidth]{2-node_daisychain.jpg}
+    \includegraphics[width=0.65\linewidth]{2-node_daisychain.jpg}
   \end{center}
   \caption{Proper connection of endpoint, two nodes and a FSR sensor.}
   \label{fig:node_daisychain}
