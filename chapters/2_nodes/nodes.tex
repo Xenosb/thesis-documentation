@@ -1,7 +1,7 @@
 \chapter{Sensor nodes}
 \label{chap:nodes}
 
-This chapter will describe functionalities of sensor node devices. After that it will describe how electronic parts were chosen. A separate section will include details regarding \ac{PCB} design while another section will describe software developed for the sensor nodes.
+This chapter will describe functionalities of sensor node devices. After that it will describe how electronic parts were chosen. A separate section will include details regarding \ac{PCB} design while another section will describe software developed for the sensor nodes. Both software and hardware files are available with additional instructions on \href{github.com/Xenosb/thesis-atmel}{GitHub} page.
 
 \section{Physical design and connections}
 
@@ -103,7 +103,7 @@ Two other classes are used for storing temporary communication information. \ac{
   \label{fig:node_classes}
 \end{figure}
 
-The main program starts with the initialization of peripherals - position sensing input pin is set to digital pull down input while and led and position sensing output pin are set as output pins. Then, I2C communication is initialized to operate on $100KHz$ frequency and takes default address 0x10. Since reading subsampled data from \ac{ADC} takes considerable time, reding sensor value after request for its value was requested would result in a timeout. This is why a periodical sensor update is executed roughly every 100ms. Framework's inbuilt Ticker class takes care that function \code{update{\_}all{\_}sensors()} is executed regularly. Unfortunately, mbed does not provide \ac{API} functionality to add custom function as software interrupt when I2C package is received. This is why a main program loop is executing \code{i2c{\_}slave{\_}worker()} function. This function contains main communication logic. It listens to I2C bus and depending on the received data initializes \code{I2C{\_}RESULT} object which is then returned to main function. This object is then transferred to \code{process{\_}i2c{\_}call} which depending on the message type calls read, write and broadcast (general call) routines. Program logic is visualized in Figure \ref{fig:node_logic}.
+The main program starts with the initialization of peripherals - position sensing input pin is set to digital pull down input while and led and position sensing output pin are set as output pins. Then, I2C communication is initialized to operate on $100KHz$ frequency and takes default address 0x10. Since reading subsampled data from \ac{ADC} takes considerable time, reding sensor value after request for its value was requested would result in a timeout. This is why a periodical sensor update is executed roughly every 100ms. Framework's inbuilt Ticker class takes care that function \code{update{\_}all{\_}sensors()} is executed regularly. Unfortunately, mbed does not provide \ac{API} functionality to add custom function as software interrupt when I2C package is received. This is why a main program loop is executing \code{i2c{\_}slave{\_}worker()} function. This function contains main communication logic. It listens to I2C bus and depending on the received data initializes \code{I2C{\_}RESULT} object which is then returned to main function. This object is then transferred to \code{process{\_}i2c{\_}call()} which depending on the message type calls read, write and broadcast (general call) routines. Program logic is visualized in Figure \ref{fig:node_logic}.
 
 \begin{figure}[h]
   \begin{center}
