@@ -58,6 +58,7 @@
         "protomat",
         "psqi",
         "pylint",
+        "repr",
         "ssec",
         "systemd",
         "toolchains",

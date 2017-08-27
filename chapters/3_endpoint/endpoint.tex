@@ -36,4 +36,29 @@ After \ac{I2C} communication was working, additional wire for position sensing w
   \label{fig:endpoint_sequence}
 \end{figure}
 
+
 \section{Data acquisition routine}
+
+For the system to function as described, both data acquisition process and web server have to run in parallel and without concurrency issues. Sensor network data is shared through the database and this doesn't cause concurrency issues because data acquisition routine is constantly adding new data while web server is only reading or modifying already stored data. But some things like acquisition start and stop or \ac{I2C} address redistribution commanding are a part of control logic which doesn't have to be stored in the database. In fact, implementation of communication between two separate processes using database would be quite inefficient. This is why a system pipe is used for message communication. Starting and stopping the data acquisition routine, changing between simulation and sensor network data collection and \ac{I2C} address redistribution are implemented using pipe communication. Pipe has two ends - data acquisition has one end and web server has the other. When a process is reading or writing data to a pipe, it uses a pipe end provided to it. This makes communication between processes easy and robust. Data acquisition process also uses an activity flag which is set when process is collecting data. This flag is used by web server to check if there is a need to read new data from the database and to decide if it is possible to start or stop the routine. This flag is implemented as a shared memory object. Both pipe and shared memory are created when uwsgi starts the application.
+
+First thing data acquisition does when it's instantiated is read the system configuration. Configuration file defines 3 different scenarios - production environment on Intel Edison, testing environment on Intel Edison and testing environment on development \ac{PC}. Configurations are implemented as classes extending the same parent class which is holding shared configuration settings such as web application secret and update frequency. Extending configurations hold information on database \ac{URI}, debug properties and deployment environment. Then, according to the configuration \ac{URI}, data acquisition routine acquires connection to the database and depending on the configuration sets the data read function to point to read function from nodes or from a simulator. It isn't possible to always get the data from the sensor nodes. Such case would be development of frontend or backend software on an external \ac{PC}. This is why simulator was implemented it randomly generates sensor node data and conforms to the same rule as sensor node read function.
+
+The database has 3 tables for storing the sensor network data. First there is a \code{Node} class. Each node has its unique \ac{id} but is also described by its position (eg. 1 for node covering pillow and shoulder region, 2 for node covering chest). Second model is \code{Sensor} and it holds information on each of the \ac{FSR} sensors. Each sensor has a single node which it references but node can also easily access aggregated sensors as an array with the help of SQLAlchemy's backreference feature. To know which sensor is which, sensor table also holds information on sensors position (eg. sensor 1 is the one closest to the left bed frame side). When a reading from sensor is taken, it is saved as an instance of \code{SensorValue} model. This table holds the timestamp and value as well as a reference to which sensor this sensor reading belongs to. For each of the models, two additional methods are implemented. \code{{\_\_}repr{\_\_}()} method is used for easier debug reading and \code{serialize()} is used for object representation as JSON. An \ac{ER} model can be seen in Figure \ref{fig:endpoint_classes}. \\
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=\linewidth]{3-endpoint_classes.png}
+  \end{center}
+  \caption{Database \ac{ER} model for storing sensor values and system information.}
+  \label{fig:endpoint_classes}
+\end{figure}
+
+So how does the system acquire sensor data from the nodes? Process first checks for data in the pipe. If start, stop or address redistribution command is received it will accordingly change its activity state or execute the redistribution procedure. Then, depending on the specified platform - edison or \ac{PC} it will execute a sensor readout method. Simulation method queries all available sensors and generates new sensor value. After that sensor value object, sensor and node are added to session and session is synchronized so that data is written to the database. For actual sensor readout on Edison, a method involves reading from every sensor on every available node. Problem with mraa implementation on Edison is that it doesn't set the acknowledge bit after it receives data from the node. This locks the node and it can't process another read request if a new byte is sent by master. This is why before the read request, a write request is issued. After that, a request for specified sensor is issued. Since sensor reads maximum voltage when there is no pressure, value is inverted by subtracting current sensor value from maximal value. As read error encountered on the \ac{I2C} bus is the same as maximum voltage, reading procedure is retried multiple times until value is over threshold. To prevent program locking in this state, number of retries is limited. After reading was taken it's saved to the database. After all sensors were updated, process sleeps for a period defined in configuration file. Program flow is shown as a graph in Figure \ref{fig:endpoint_logic}.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=\linewidth]{3-endpoint_logic.png}
+  \end{center}
+  \caption{Flow diagram of data acquisition process.}
+  \label{fig:endpoint_logic}
+\end{figure}
