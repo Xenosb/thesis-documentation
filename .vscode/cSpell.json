@@ -66,6 +66,7 @@
         "ssec",
         "systemd",
         "toolchains",
+        "ucler",
         "uint",
         "uwsgi"
     ],
