@@ -6,7 +6,7 @@ This chapter focuses on user interface and \ac{API} provided by the project. In 
 
 \section{Application programming interface}
 
-\ac{URL} for \ac{API} routes is distinguished by \code{/api}. Data served by \ac{API} is in \ac{JSON} format and is structured to be both human and machine readable. Accessing \code{/api/system} provides the list of all of the nodes with their names, \ac{id}s, timestamps of latest update and with list of attached sensor \ac{id}s. This allows external services to navigate though the system and query specific nodes and sensors for values. \code{/api/node} accepts node \ac{id} as a parameter and serves node id, name, list of attached sensor ids and last update timestamp. An example \ac{URL} for accessing node with id 1 would be \code{/api/node?id=1}. When sensor is accessed using \code{/api/sensor?id=1}, last update, last value, parent node id and sensor position on that node are displayed. If external service wants to access value history for a specific sensor this can be done via route \code{/api/sensor{\_}value} with supplied sensor id as a parameter. If no other parameter is received, server will provide array with 50 latest readings. Result is structured in such a way that it timestamp is a key for value at that given time. On that same route simple filtering can be introduced using start and end timestamps. By default, 50 latest readings are provided but more or less can be accessed using \code{readings} as a parameter. An example of data provided by accessing api route with start, end and number of readings parameters is seen in Listing \ref{lst:api_filter} while an overview of all of the model routes can be found in Table \ref{tab:web_api_model}.\\
+\ac{URL} for \ac{API} routes is distinguished by \code{/api}. Data served by \ac{API} is in \ac{JSON} format and is structured to be both human and machine readable. Accessing \code{/api/system} provides the list of all of the nodes with their names, \ac{id}s, timestamps of latest update and with list of attached sensor \ac{id}s. This allows external services to navigate though the system and query specific nodes and sensors for values. \code{/api/node} accepts node \ac{id} as a parameter and serves node id, name, list of attached sensor ids and last update timestamp. An example \ac{URL} for accessing node with id 1 would be \code{/api/node?id=1}. When sensor is accessed using \code{/api/sensor?id=1}, last update, last value, parent node id and sensor position on that node are displayed. If external service wants to access value history for a specific sensor this can be done via route \code{/api/sensor{\_}value} with supplied sensor id as a parameter. If no other parameter is received, server will provide array with 50 latest readings. Result is structured in such a way that timestamp is a key for value at that given time. On that same route simple filtering can be introduced using start and end timestamps. By default, 50 latest readings are provided but more or less can be accessed using \code{readings} as a parameter. An example of data provided by accessing api route with start, end and number of readings parameters is seen in Listing \ref{lst:api_filter} while an overview of all of the model routes can be found in Table \ref{tab:web_api_model}.\\
 
 \begin{lstlisting}[language=json,firstnumber=1,caption={API result for first 5 readings done in a set period of time},label={lst:api_filter}]
   {
@@ -29,6 +29,7 @@ This chapter focuses on user interface and \ac{API} provided by the project. In 
       /api/node & id & Returns the timestamp of last node update, it's name and list of all available sensors \\[1ex]
       /api/sensor & id & Returns the position of the sensor, last value and its timestamp \\[1ex]
       /api/sensor{\_}value & id, readings, start, stop & By default returns last 50 values read by the sensor specified by the supplied id. Time period of readings can be filtered by start and stop timestamps. Readings parameter filters the number of readings. \\
+      /api/system &  & Returns the system overview with node and sensor ids \\ 
       \hline
     \end{tabular}
   \end{center}
@@ -44,10 +45,9 @@ The next part of the \ac{API} concerns the charts. Most of the charts are implem
       \hline
       Route & Parameters & Description \\ 
       \hhline{|=|=|=|}
-      /api/chart/heatmap &  & Returns 0xab (1B) \\[1ex]
-      /api/chart/histogram &  & Returns 0xab (1B) \\[1ex]
-      /api/chart/node &  & Returns 0xab (1B) \\[1ex]
-      /api/system &  & Returns the system overview with node and sensor ids \\ 
+      /api/chart/heatmap & time & Returns 0xab (1B) \\[1ex]
+      /api/chart/histogram & time & Returns 0xab (1B) \\[1ex]
+      /api/chart/node & time & Returns 0xab (1B) \\[1ex]
       \hline
     \end{tabular}
   \end{center}
@@ -79,7 +79,7 @@ It's also possible to see the status of the data acquisition service using path 
 
 \section{User interface}
 
-Python Flask framework follows \ac{MVC} rules regarding the separation of logic. Model and a part of controller were already presented but this section will focus mainly on view and its integration. Flask uses \href{http://jinja.pocoo.org/docs/2.9/}{Jinja2} template engine which allows specific web pages to easily implement and extend template design. It also allows injection of data and control logic into the view. This means that data objects can be passed directly from the controller while control logic like loops or if clauses may be used to construct the page that will in the end be rendered. For each of the pages a separate template is created in \code{app/templates/} folder. \code{base.html} is a template which all other pages extending. It implements \ac{HTML} headers, user interface parts such as sidebar, header and footer. It links all of \ac{CSS}, javascript pages and allows insertion of page specific javascript files in separate block. File \code{/app/views.py} holds the request routing logic. Based on the received \ac{HTTP} requests, program renders different templates by inserting required data objects. A bigger part of user interface design is based on \href{coreui.io}{CoreUI} \href{http://getbootstrap.com/}{Bootstrap} admin interface template. The template was modified and structured to work as a Jinja2 template. CoreUI is licensed under MIT license\cite{coreui-license} and can be used and distributed free but with the preservation of license.
+Python Flask framework follows \ac{MVC} rules regarding the separation of logic. Model and a part of controller were already presented but this section will focus mainly on view and its integration. Flask uses \href{http://jinja.pocoo.org/docs/2.9/}{Jinja2} template engine which allows specific web pages to easily implement and extend template design. It also allows injection of data and control logic into the view. This means that data objects can be passed directly from the controller while control logic like loops or if clauses may be used to construct the page that will in the end be rendered. For each of the pages a separate template was created in \code{app/templates/} folder. \code{base.html} is a template which all other pages extending. It implements \ac{HTML} headers, user interface parts such as sidebar, header and footer. It links all of \ac{CSS}, javascript pages and allows insertion of page specific javascript files in separate block. File \code{/app/views.py} holds the request routing logic. Based on the received \ac{HTTP} requests, program renders different templates by inserting required data objects. A bigger part of user interface design is based on \href{coreui.io}{CoreUI} \href{http://getbootstrap.com/}{Bootstrap} admin interface template. The template was modified and structured to work as a Jinja2 template. CoreUI is licensed under MIT license\cite{coreui-license} and can be used and distributed free but with the preservation of license.
 
 As it was already mentioned, website was designed to allow live updating and graphics rich design. For that, multiple javascript libraries were used. Some of them are jQuery, Bootstrap, chart.js and plotly. To take care of these dependencies, bower was used. On \ac{CSS} side, Bootstrap was extended by a custom script.
 
@@ -119,6 +119,6 @@ The whole interface was also adapted to work with the mobile devices. In case of
   \begin{center}
     \includegraphics[width=0.3\linewidth]{4-interface_mobile.png}
   \end{center}
-  \caption{Flow diagram of data acquisition process.}
+  \caption{User interface as displayed on a mobile device.}
   \label{fig:interface_mobile}
 \end{figure}
